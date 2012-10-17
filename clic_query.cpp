@@ -75,26 +75,26 @@ enum CXChildVisitResult visitorFunction(
 
 enum QueryType {
 	QUERY_DECL,
-	QUERY_IMPL
+	QUERY_DEFINE
 };
 
 int main(int argc, char* argv[]) {
-	if (argc < 7) {
-		fprintf(stderr, "Usage:\n\t <-f file> <-l line> <-c col> <-d | -i> <-p path_lists>\n");
+	if (argc < 6) {
+		fprintf(stderr, "Usage:\n\t <-f file> <-l line> <-c col> <-i> <-p path_lists>\n");
 		return 1;
 	}
 
 	char* file_name;
 	int col;
 	int line;
-	int query_type;
+	int query_type = QUERY_DECL;
 	char*p = NULL;
 	char* tmp = NULL;
 	char* path_lists[128];
 
 	// get options
 	int c;
-	while ((c = getopt(argc, argv, "f:l:c:dip:")) != -1) {
+	while ((c = getopt(argc, argv, "f:l:c:ip:")) != -1) {
 		switch (c) {
 		case 'f':
 			file_name = optarg;
@@ -105,11 +105,8 @@ int main(int argc, char* argv[]) {
 		case 'c':
 			col = atoi(optarg);
 			break;
-		case 'd':
-			query_type = QUERY_DECL;
-			break;
 		case 'i':
-			query_type = QUERY_IMPL;
+			query_type = QUERY_DEFINE;
 			break;
 		case 'p':
 			tmp = optarg;
@@ -166,11 +163,12 @@ int main(int argc, char* argv[]) {
 	CXFile cx_file = clang_getFile(tu, (const char*)file_name);
 	CXSourceLocation cx_source_loc = clang_getLocation(tu, cx_file, line, col);
 	CXCursor cx_cursor = clang_getCursor(tu, cx_source_loc);
+
 	CXCursor t_cursor = clang_getNullCursor();
-	if (query_type == QUERY_IMPL)
-		t_cursor = clang_getCursorDefinition(cx_cursor);
-	else //query_type is QUERY_DECL
+	if (query_type == QUERY_DECL)
 		t_cursor = clang_getCursorReferenced(cx_cursor);
+	else //query_type is QUERY_DEFINE
+		t_cursor = clang_getCursorDefinition(cx_cursor);
 	CXFile t_file;
 	unsigned int t_line, t_col, t_offset;
 
@@ -183,12 +181,16 @@ int main(int argc, char* argv[]) {
 		       clang_getCString(clang_getFileName(t_file)),
 		       t_line,
 		       t_col);
-			
+
+		CXString t_spell = clang_getCursorKindSpelling(clang_getCursorKind(t_cursor));
 		CXString t_usr = clang_getCursorUSR(t_cursor);
-		printf("display = %s\n", clang_getCString(t_usr));
+		printf("%s, display = %s\n",
+		       clang_getCString(t_spell),
+		       clang_getCString(t_usr));
+		clang_disposeString(t_spell);
+		clang_disposeString(t_usr);
 	}
 	else printf("no target file found.\n");
-
 
 	// dealloc
 	clang_disposeTranslationUnit(tu);
