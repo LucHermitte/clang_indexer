@@ -13,66 +13,6 @@ extern "C" {
 #include <string>
 #include <sstream>
 
-// This code intentionally leaks memory like a sieve because the program is shortlived.
-
-class IVisitor {
-public:
-	virtual enum CXChildVisitResult visit(CXCursor cursor, CXCursor parent) = 0;
-};
-
-class EverythingIndexer : public IVisitor {
-public:
-	EverythingIndexer(const char* translationUnitFilename)
-		: translationUnitFilename(translationUnitFilename) {}
-
-	virtual enum CXChildVisitResult visit(CXCursor cursor, CXCursor parent) {
-		CXFile file;
-		unsigned int line, column, offset;
-		clang_getInstantiationLocation(
-			clang_getCursorLocation(cursor),
-			&file, &line, &column, &offset);
-		CXCursorKind kind = clang_getCursorKind(cursor);
-		const char* cursorFilename = clang_getCString(clang_getFileName(file));
-		printf("visit FILE: %s\n", cursorFilename);
-		if (!clang_getFileName(file).data) {
-			return CXChildVisit_Continue;
-		}
-
-		CXCursor refCursor = clang_getCursorReferenced(cursor);
-		if (!clang_equalCursors(refCursor, clang_getNullCursor())) {
-			CXFile refFile;
-			unsigned int refLine, refColumn, refOffset;
-			clang_getInstantiationLocation(
-				clang_getCursorLocation(refCursor),
-				&refFile, &refLine, &refColumn, &refOffset);
-
-			if (clang_getFileName(refFile).data) {
-				std::string referencedUsr(clang_getCString(clang_getCursorUSR(refCursor)));
-				if (!referencedUsr.empty()) {
-					std::stringstream ss;
-					ss << cursorFilename
-					   << ":" << line << ":" << column << ":" << kind;
-					std::string location(ss.str());
-					usrToReferences[referencedUsr].insert(location);
-				}
-			}
-		}
-		return CXChildVisit_Recurse;
-	}
-
-	const char* translationUnitFilename;
-	ClicIndex usrToReferences;
-};
-
-enum CXChildVisitResult visitorFunction(
-        CXCursor cursor,
-        CXCursor parent,
-        CXClientData clientData)
-{
-	IVisitor* visitor = (IVisitor*)clientData;
-	return visitor->visit(cursor, parent);
-}
-
 enum QueryType {
 	QUERY_DECL,
 	QUERY_DEFINE
@@ -80,7 +20,7 @@ enum QueryType {
 
 int main(int argc, char* argv[]) {
 	if (argc < 6) {
-		fprintf(stderr, "Usage:\n\t <-f file> <-l line> <-c col> <-i> <-p path_lists>\n");
+		fprintf(stderr, "Usage:\n\t <-f file> <-l line> <-c col> <-i> <-p path_lists> <-x extra_files>\n");
 		return 1;
 	}
 
@@ -89,12 +29,14 @@ int main(int argc, char* argv[]) {
 	int line;
 	int query_type = QUERY_DECL;
 	char*p = NULL;
-	char* tmp = NULL;
-	char* path_lists[128];
+	char* tmp_paths = NULL;
+	char* tmp_files = NULL;
+	char* paths_list[128];
+	char* extra_files[128];
 
 	// get options
 	int c;
-	while ((c = getopt(argc, argv, "f:l:c:ip:")) != -1) {
+	while ((c = getopt(argc, argv, "f:l:c:ip:x:")) != -1) {
 		switch (c) {
 		case 'f':
 			file_name = optarg;
@@ -109,8 +51,10 @@ int main(int argc, char* argv[]) {
 			query_type = QUERY_DEFINE;
 			break;
 		case 'p':
-			tmp = optarg;
-			printf("tmp = %s\n", tmp);
+			tmp_paths = optarg;
+			break;
+		case 'x':
+			tmp_files = optarg;
 			break;
 		default:
 			printf("unknow option -%c.\n", optopt);
@@ -118,33 +62,57 @@ int main(int argc, char* argv[]) {
 	}
 			    
 	// split path lists
-	p = strtok(tmp, ":");
-	int cnt = 0;
+	p = strtok(tmp_paths, ":");
+	int pcnt = 0;
 	while (p != NULL) {
-		path_lists[cnt++] = p;
+		paths_list[pcnt++] = p;
 		p = strtok(NULL, ":");
 	}
 	    
+	p = strtok(tmp_files, ",");
+	int fcnt = 0;
+	while (p != NULL) {
+		extra_files[fcnt++] = p;
+		p = strtok(NULL, ",");
+	}
+
 	// debug print    
 	std::cout << "file = " << file_name << "\n";
 	std::cout << "line = " << line << ", col=" << col << "\n";
 	std::cout << "type = " << query_type << "\n";
-	std::cout << "total " << cnt << " path lists \n";
-	for (int i=0; i<cnt; i++)
-		std::cout << path_lists[i] << "\n";
-
+	std::cout << "total " << pcnt << " path lists \n";
+	for (int i=0; i<pcnt; i++)
+		std::cout << paths_list[i] << "\n";
+	std::cout << "total " << fcnt << " extra files \n";
+	for (int i=0; i<fcnt; i++)
+		std::cout << extra_files[i] << "\n";
+	
 
 	// Set up the clang translation unit
 	CXIndex cxindex = clang_createIndex(0, 0);
-	const char* command_line_args[2] = {
+	const char* command_line_args[3] = {
 		"-I/usr/lib/gcc/i486-linux-gnu/4.7/include", 
-		"-I/usr/local/include"
+		"-I/usr/GNUstep/Local/Library",
+		"-I/usr/GNUstep/System/Library/Makefiles/TestFramework"
 	};
+
+	// add extra files for parsing
+	for (int i = 0; i<fcnt; i++) {
+		struct stat sts;
+		if (stat(extra_files[i], &sts) == 0) {
+			printf ("Parsing %s ...\n", extra_files[i]);
+			clang_createTranslationUnitFromSourceFile(cxindex, extra_files[i],
+								  3, command_line_args,
+								  0, 0);
+		}
+	}
+
 	CXTranslationUnit tu = clang_parseTranslationUnit(
 		cxindex, file_name,
-		command_line_args, 2,
+		command_line_args, 3,
 		0, 0,
 		CXTranslationUnit_DetailedPreprocessingRecord);
+
 
 	// Print any errors or warnings
 	int n = clang_getNumDiagnostics(tu);
@@ -167,8 +135,9 @@ int main(int argc, char* argv[]) {
 	CXCursor t_cursor = clang_getNullCursor();
 	if (query_type == QUERY_DECL)
 		t_cursor = clang_getCursorReferenced(cx_cursor);
-	else //query_type is QUERY_DEFINE
+	else // QUERY_DEFINE
 		t_cursor = clang_getCursorDefinition(cx_cursor);
+	
 	CXFile t_file;
 	unsigned int t_line, t_col, t_offset;
 

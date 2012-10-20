@@ -1,0 +1,2 @@
+/usr/bin/ar cr libcommon.a  CMakeFiles/common.dir/clic_parser.cpp.o CMakeFiles/common.dir/clic_printer.cpp.o CMakeFiles/common.dir/ClicDb.cpp.o
+/usr/bin/ranlib libcommon.a
