@@ -101,9 +101,11 @@ int main(int argc, char* argv[]) {
 		struct stat sts;
 		if (stat(extra_files[i], &sts) == 0) {
 			printf ("Parsing %s ...\n", extra_files[i]);
-			clang_createTranslationUnitFromSourceFile(cxindex, extra_files[i],
-								  3, command_line_args,
-								  0, 0);
+			clang_parseTranslationUnit(
+				cxindex, extra_files[i],
+				command_line_args, 3,
+				0, 0,
+				CXTranslationUnit_DetailedPreprocessingRecord);
 		}
 	}
 
