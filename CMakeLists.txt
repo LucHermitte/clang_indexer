@@ -46,3 +46,8 @@ add_executable(clic_query clic_query.cpp)
 target_link_libraries(clic_query
     ${LibClang_LIBRARIES}
 )
+
+add_executable(clic_visitor clic_visitor.cpp)
+target_link_libraries(clic_visitor
+    ${LibClang_LIBRARIES}
+)

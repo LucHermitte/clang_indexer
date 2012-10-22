@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/clic_visitor.dir/clic_visitor.cpp.o  -o clic_visitor -rdynamic /usr/local/lib/libclang.so -Wl,-rpath,/usr/local/lib 

@@ -193,13 +193,48 @@ clean: CMakeFiles/clic_rm.dir/clean
 .PHONY : clean
 
 #=============================================================================
+# Target rules for target CMakeFiles/clic_visitor.dir
+
+# All Build rule for target.
+CMakeFiles/clic_visitor.dir/all:
+	$(MAKE) -f CMakeFiles/clic_visitor.dir/build.make CMakeFiles/clic_visitor.dir/depend
+	$(MAKE) -f CMakeFiles/clic_visitor.dir/build.make CMakeFiles/clic_visitor.dir/build
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/workspace/clang-3.0/clang_indexer/build/CMakeFiles  5
+	@echo "Built target clic_visitor"
+.PHONY : CMakeFiles/clic_visitor.dir/all
+
+# Include target in all.
+all: CMakeFiles/clic_visitor.dir/all
+.PHONY : all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/clic_visitor.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/tom/workspace/clang-3.0/clang_indexer/build/CMakeFiles 1
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/clic_visitor.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/tom/workspace/clang-3.0/clang_indexer/build/CMakeFiles 0
+.PHONY : CMakeFiles/clic_visitor.dir/rule
+
+# Convenience name for target.
+clic_visitor: CMakeFiles/clic_visitor.dir/rule
+.PHONY : clic_visitor
+
+# clean rule for target.
+CMakeFiles/clic_visitor.dir/clean:
+	$(MAKE) -f CMakeFiles/clic_visitor.dir/build.make CMakeFiles/clic_visitor.dir/clean
+.PHONY : CMakeFiles/clic_visitor.dir/clean
+
+# clean rule for target.
+clean: CMakeFiles/clic_visitor.dir/clean
+.PHONY : clean
+
+#=============================================================================
 # Target rules for target CMakeFiles/common.dir
 
 # All Build rule for target.
 CMakeFiles/common.dir/all:
 	$(MAKE) -f CMakeFiles/common.dir/build.make CMakeFiles/common.dir/depend
 	$(MAKE) -f CMakeFiles/common.dir/build.make CMakeFiles/common.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/workspace/clang-3.0/clang_indexer/build/CMakeFiles  5 6 7
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/tom/workspace/clang-3.0/clang_indexer/build/CMakeFiles  6 7 8
 	@echo "Built target common"
 .PHONY : CMakeFiles/common.dir/all
 

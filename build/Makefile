@@ -151,6 +151,19 @@ clic_rm/fast:
 .PHONY : clic_rm/fast
 
 #=============================================================================
+# Target rules for targets named clic_visitor
+
+# Build rule for target.
+clic_visitor: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 clic_visitor
+.PHONY : clic_visitor
+
+# fast build rule for target.
+clic_visitor/fast:
+	$(MAKE) -f CMakeFiles/clic_visitor.dir/build.make CMakeFiles/clic_visitor.dir/build
+.PHONY : clic_visitor/fast
+
+#=============================================================================
 # Target rules for targets named common
 
 # Build rule for target.
@@ -331,6 +344,30 @@ clic_rm.cpp.s:
 	$(MAKE) -f CMakeFiles/clic_rm.dir/build.make CMakeFiles/clic_rm.dir/clic_rm.cpp.s
 .PHONY : clic_rm.cpp.s
 
+clic_visitor.o: clic_visitor.cpp.o
+.PHONY : clic_visitor.o
+
+# target to build an object file
+clic_visitor.cpp.o:
+	$(MAKE) -f CMakeFiles/clic_visitor.dir/build.make CMakeFiles/clic_visitor.dir/clic_visitor.cpp.o
+.PHONY : clic_visitor.cpp.o
+
+clic_visitor.i: clic_visitor.cpp.i
+.PHONY : clic_visitor.i
+
+# target to preprocess a source file
+clic_visitor.cpp.i:
+	$(MAKE) -f CMakeFiles/clic_visitor.dir/build.make CMakeFiles/clic_visitor.dir/clic_visitor.cpp.i
+.PHONY : clic_visitor.cpp.i
+
+clic_visitor.s: clic_visitor.cpp.s
+.PHONY : clic_visitor.s
+
+# target to generate assembly for a file
+clic_visitor.cpp.s:
+	$(MAKE) -f CMakeFiles/clic_visitor.dir/build.make CMakeFiles/clic_visitor.dir/clic_visitor.cpp.s
+.PHONY : clic_visitor.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -341,6 +378,7 @@ help:
 	@echo "... clic_clear"
 	@echo "... clic_query"
 	@echo "... clic_rm"
+	@echo "... clic_visitor"
 	@echo "... common"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
@@ -365,6 +403,9 @@ help:
 	@echo "... clic_rm.o"
 	@echo "... clic_rm.i"
 	@echo "... clic_rm.s"
+	@echo "... clic_visitor.o"
+	@echo "... clic_visitor.i"
+	@echo "... clic_visitor.s"
 .PHONY : help
 
 
