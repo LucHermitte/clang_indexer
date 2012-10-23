@@ -5,7 +5,7 @@
 
 #define MAX_VAR_LENGTH 128
 
-enum MATCHING_CONDITION
+enum MATCHING_TYPE
 {
 	MATCH_DEFINE,
 	MATCH_DECLARE
@@ -14,10 +14,18 @@ enum MATCHING_CONDITION
 class MatchPattern
 {
 public:
-	int cond;
+	int type;
 	char name [MAX_VAR_LENGTH];
 	CXCursor result_cursor;
-	MatchPattern() { result_cursor = clang_getNullCursor(); };
+	MatchPattern(enum MATCHING_TYPE type, const char* name) {
+		this->type = type;
+		strncpy(this->name, name, MAX_VAR_LENGTH);
+		result_cursor = clang_getNullCursor();
+	};
+	bool compare(MatchPattern other) {
+		return ((other.type == this->type) &&
+			(strcmp(other.name, this->name) == 0));
+	}
 };
 
 enum CXChildVisitResult visitor_f(
@@ -29,11 +37,6 @@ enum CXChildVisitResult visitor_f(
         unsigned int line, column, offset;
 	MatchPattern* mp = (MatchPattern *)clientData;
 
-	// if invalid cursor, visit sibling
-	if (clang_Cursor_isNull(cursor)) {
-		printf("visitor(): invalid cursor, visit sibling\n");
-		return CXChildVisit_Continue;
-	}
 
         // if corresponding file is invalid,
 	// visit sibling
@@ -47,7 +50,10 @@ enum CXChildVisitResult visitor_f(
 	}
 
 	const char* info = clang_getCString(clang_getCursorSpelling(cursor));
-	printf("%s\n", info);
+	if (strlen(info) > 0) {
+		const char* kind = clang_getCString(clang_getCursorKindSpelling(clang_getCursorKind(cursor)));
+		printf("(%d, %d) %s\t: %s\n", line, column, kind, info);
+	}
         return CXChildVisit_Recurse;
 }
 
@@ -86,8 +92,11 @@ int main (int argc, char* argv[])
 	        printf("\t%s\n", ast_files[i]);
 
 	CXIndex cidx = clang_createIndex(0, 0);
-	CXTranslationUnit tu = clang_createTranslationUnit(cidx, ast_files[0]);
-	CXCursor tu_cursor = clang_getTranslationUnitCursor(tu);
-	MatchPattern match_pattern;
-	clang_visitChildren(tu_cursor, visitor_f, &match_pattern);
+	MatchPattern match_pattern(MATCH_DEFINE, "dump");
+
+	for(int i=0; i<fcnt; i++) {
+		CXTranslationUnit tu = clang_createTranslationUnit(cidx, ast_files[i]);
+		CXCursor tu_cursor = clang_getTranslationUnitCursor(tu);
+		clang_visitChildren(tu_cursor, visitor_f, &match_pattern);
+	}
 }
