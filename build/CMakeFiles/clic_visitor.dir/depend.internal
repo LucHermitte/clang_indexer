@@ -3,3 +3,6 @@
 
 CMakeFiles/clic_visitor.dir/clic_visitor.cpp.o
  /home/tom/workspace/clang-3.0/clang_indexer/clic_visitor.cpp
+ /usr/local/include/clang-c/CXString.h
+ /usr/local/include/clang-c/Index.h
+ /usr/local/include/clang-c/Platform.h

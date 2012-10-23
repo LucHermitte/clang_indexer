@@ -1,0 +1,6 @@
+/home/tom/workspace/clang-3.0/clang_indexer/CMakeFiles/clic_add.dir
+/home/tom/workspace/clang-3.0/clang_indexer/CMakeFiles/clic_clear.dir
+/home/tom/workspace/clang-3.0/clang_indexer/CMakeFiles/clic_query.dir
+/home/tom/workspace/clang-3.0/clang_indexer/CMakeFiles/clic_rm.dir
+/home/tom/workspace/clang-3.0/clang_indexer/CMakeFiles/clic_visitor.dir
+/home/tom/workspace/clang-3.0/clang_indexer/CMakeFiles/common.dir

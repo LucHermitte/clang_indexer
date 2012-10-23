@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/clic_add.dir/clic_add.cpp.o  -o clic_add -rdynamic libcommon.a -lboost_iostreams-mt -lz -ldb_cxx /usr/local/lib/libclang.so -Wl,-rpath,/usr/local/lib 

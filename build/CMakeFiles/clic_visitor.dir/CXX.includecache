@@ -13,4 +13,24 @@ unistd.h
 -
 string.h
 -
+clang-c/Index.h
+-
+
+/usr/local/include/clang-c/CXString.h
+clang-c/Platform.h
+/usr/local/include/clang-c/clang-c/Platform.h
+
+/usr/local/include/clang-c/Index.h
+sys/stat.h
+-
+time.h
+-
+stdio.h
+-
+clang-c/Platform.h
+/usr/local/include/clang-c/clang-c/Platform.h
+clang-c/CXString.h
+/usr/local/include/clang-c/clang-c/CXString.h
+
+/usr/local/include/clang-c/Platform.h
 

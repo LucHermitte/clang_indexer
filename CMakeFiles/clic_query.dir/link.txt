@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/clic_query.dir/clic_query.cpp.o  -o clic_query -rdynamic /usr/local/lib/libclang.so -Wl,-rpath,/usr/local/lib 

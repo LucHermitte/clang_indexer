@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/clic_rm.dir/clic_rm.cpp.o  -o clic_rm -rdynamic libcommon.a -lboost_iostreams-mt -lz -ldb_cxx 

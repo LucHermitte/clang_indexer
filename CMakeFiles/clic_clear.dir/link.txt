@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/clic_clear.dir/clic_clear.cpp.o  -o clic_clear -rdynamic libcommon.a -ldb_cxx 
