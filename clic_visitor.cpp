@@ -11,22 +11,29 @@ enum MATCHING_TYPE
 	MATCH_DECLARE
 };
 
-class MatchPattern
+struct MatchPattern
 {
-public:
 	int type;
 	char name [MAX_VAR_LENGTH];
 	CXCursor result_cursor;
-	MatchPattern(enum MATCHING_TYPE type, const char* name) {
-		this->type = type;
-		strncpy(this->name, name, MAX_VAR_LENGTH);
-		result_cursor = clang_getNullCursor();
-	};
-	bool compare(MatchPattern other) {
-		return ((other.type == this->type) &&
-			(strcmp(other.name, this->name) == 0));
-	}
 };
+
+
+void init_match_pattern(MatchPattern* m,
+			enum MATCHING_TYPE type,
+			const char* name)
+{
+	m->type = type;
+	strncpy(m->name, name, MAX_VAR_LENGTH);
+	m->result_cursor = clang_getNullCursor();
+}
+
+
+bool compare_match_pattern(MatchPattern* a, MatchPattern* b) {
+	return ((a->type == b->type) &&
+		(strcmp(a->name, b->name) == 0));
+}
+
 
 enum CXChildVisitResult visitor_f(
         CXCursor cursor,
@@ -36,7 +43,6 @@ enum CXChildVisitResult visitor_f(
         CXFile file;
         unsigned int line, column, offset;
 	MatchPattern* mp = (MatchPattern *)clientData;
-
 
         // if corresponding file is invalid,
 	// visit sibling
@@ -50,7 +56,7 @@ enum CXChildVisitResult visitor_f(
 	}
 
 	const char* info = clang_getCString(clang_getCursorSpelling(cursor));
-	if (strlen(info) > 0) {
+	if ((strlen(info) > 0) && (strcmp(mp->name, info) == 0)) {
 		const char* kind = clang_getCString(clang_getCursorKindSpelling(clang_getCursorKind(cursor)));
 		printf("(%d, %d) %s\t: %s\n", line, column, kind, info);
 	}
@@ -68,6 +74,7 @@ int main (int argc, char* argv[])
 	char* ast_files[128];
 	char* p;
 	char* tmp_files;
+	CXTranslationUnit tu_array[64];
 
 	while ((c = getopt(argc, argv, "s:")) != -1) {
 		switch (c) {
@@ -92,11 +99,12 @@ int main (int argc, char* argv[])
 	        printf("\t%s\n", ast_files[i]);
 
 	CXIndex cidx = clang_createIndex(0, 0);
-	MatchPattern match_pattern(MATCH_DEFINE, "dump");
+	MatchPattern m;
+	init_match_pattern(&m, MATCH_DEFINE, "dump");
 
 	for(int i=0; i<fcnt; i++) {
-		CXTranslationUnit tu = clang_createTranslationUnit(cidx, ast_files[i]);
-		CXCursor tu_cursor = clang_getTranslationUnitCursor(tu);
-		clang_visitChildren(tu_cursor, visitor_f, &match_pattern);
+		tu_array[i] = clang_createTranslationUnit(cidx, ast_files[i]);
+		CXCursor current_tu_cursor = clang_getTranslationUnitCursor(tu_array[i]);
+		clang_visitChildren(current_tu_cursor, visitor_f, &m);
 	}
 }
