@@ -20,7 +20,8 @@ find $SOURCE_PATH\
     -name "*.hxx" -or\
     -name "*.cc" -or\
     -name "*.c" -or\
-    -name "*.h"\
+    -name "*.h" -or\
+    -name "*.inl"\
     | grep -v /cmake/\
     | sort > files2.txt
 
@@ -44,7 +45,7 @@ filename_for_user() {
 }
 
 add_to_index() {
-    INDEX_FILE=`echo ${1}.i.gz | tr "/" "%"`
+    INDEX_FILE=`echo "${1}.i.gz" | tr "/" "%"`
     echo "Adding '`filename_for_user $1`'"
     # echo clic_add index.db $INDEX_FILE $ADD_CXX_FLAGS $1
     clic_add index.db $INDEX_FILE $ADD_CXX_FLAGS $1 2>&1 |
@@ -53,20 +54,22 @@ add_to_index() {
 }
 
 remove_from_index() {
-    INDEX_FILE=`echo ${1}.i.gz | tr "/" "%"`
+    INDEX_FILE=`echo "${1}.i.gz" | tr "/" "%"`
     echo "Removing '`filename_for_user $1`'"
     # echo clic_rm index.db $INDEX_FILE
-    clic_rm index.db $INDEX_FILE
+    clic_rm index.db "$INDEX_FILE"
     echo rm $INDEX_FILE
-    rm $INDEX_FILE
+    rm -f "$INDEX_FILE"
 }
 
 if [ ! -f index.db -o ! -f files.txt ]; then
     echo "Creating database from ${ADD_CXX_FLAGS_FILE} with options: ${ADD_CXX_FLAGS}"
     clic_clear index.db
-    for i in `cat files2.txt`; do
-        add_to_index $i
-    done
+
+	while read i
+	do
+        add_to_index "$i"
+    done < files2.txt
     mv files2.txt files.txt
     exit
 fi
@@ -75,22 +78,25 @@ echo "Updating database"
 #Generate the list of files added since last time
 comm -23 files2.txt files.txt > filesadded.txt
 
-for i in `cat filesadded.txt`; do
-    add_to_index $i
-done
+while read i
+do
+    add_to_index "$i"
+done < filesadded.txt
 
 # Remove removed files
-for i in `comm -23 files.txt files2.txt`; do
-    remove_from_index $i
+comm -23 files.txt files2.txt | sed 's/\\/\\\\/g' | while read i
+do
+    remove_from_index "$i"
 done
 
 # Update modified files
-for i in `cat files.txt`; do
-    if [ -f $i -a $i -nt files.txt ]; then
-        remove_from_index $i
-        add_to_index $i
+while read i
+do
+    if [ -f "$i" -a "$i" -nt files.txt ]; then
+        remove_from_index "$i"
+        add_to_index "$i"
     fi
-done
+done < files.txt
 
-rm filesadded.txt
+rm -f filesadded.txt
 mv files2.txt files.txt

@@ -1,5 +1,5 @@
 find_path(DB_INCLUDE_DIR db_cxx.h
-          PATH_SUFFIXES db51 db52 db53)
+          PATH_SUFFIXES db51 db52 db53 db4.8)
 
 find_library(DB_LIBRARY NAMES db_cxx
              PATH_SUFFIXES db51 db52 db53)
